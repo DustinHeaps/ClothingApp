@@ -1,9 +1,10 @@
-import React, { lazy, Suspense } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { ToastContainer } from 'react-toastify';
 import { GlobalStyle } from './global.styles';
+
 
 import Header from './components/header/header.component';
 
@@ -17,22 +18,18 @@ const ShopPage = lazy(() => import('./pages/shop/shop.component'));
 const SignInAndSignUpPage = lazy(() => import('./pages/sign-in-and-sign-up/sign-in-and-sign-up.component'));
 const CheckoutPage = lazy(() => import('./pages/checkout/checkout.component'));
 
-class App extends React.Component {
-  unsubscribeFromAuth = null;
+const App = ({ checkUserSession, currentUser }) => {
+  useEffect(() => {
+    checkUserSession()
+    const unsubscribeFromAuth = null;
 
-  componentDidMount() {
-    const { checkUserSession } = this.props;
-
-    checkUserSession();
-
-   
-  }
-
-  componentWillUnmount() {
-    this.unsubscribeFromAuth();
-  }
-
-  render() {
+    return () => {
+      unsubscribeFromAuth();
+    }
+  }, [checkUserSession])
+  
+  
+ 
     return (
       <div>
         <GlobalStyle />
@@ -47,7 +44,7 @@ class App extends React.Component {
               <Route
                 exact
                 path="/signin"
-                render={() => (this.props.currentUser ? <Redirect to="/" /> : <SignInAndSignUpPage />)}
+                render={() => (currentUser ? <Redirect to="/" /> : <SignInAndSignUpPage />)}
               />
             </Suspense>
           </ErrorBoundary>
@@ -56,7 +53,7 @@ class App extends React.Component {
       </div>
     );
   }
-}
+
 
 const mapStateToProps = createStructuredSelector({
   currentUser: selectCurrentUser
